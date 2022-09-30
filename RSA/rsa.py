@@ -1,4 +1,5 @@
 import time
+import os
 
 #CONSTANTS
 
@@ -153,7 +154,10 @@ if __name__ == "__main__":
     print(mr_primality_test(A, 96405083))
     print("--- %s seconds ---" % (time.time() - start_time))
 
-    test=open("E:\\Egyetem\\Msc\\1.felev\\Kodelmelet\\export_6.txt","r")
+    dir = os.path.dirname(__file__)
+    filename = os.path.join(dir, 'Testing/Data/export_6.txt')
+    test=open(filename,"r")
+    
     lines=test.readlines()
     for line in lines:
         line=line.split('\t')
