@@ -11,11 +11,6 @@ P50_1=13028317441145613048590061985388937770807889867209
 P300_1=418935665971635472851313446571463339584979301560842377758748758164833583501175687936063039370886243305685565007772947619136941212910832585955786954057597686446358493529046645312686416471967277388347161795818502950943879042333390829966913426040692197740642654317185348516362135306322034813076900210333
 P300_2=987803022049986277135970067344834622462454497299773392125226379865108836890801465494624453732220262575620990176677624787173368810199864691227980099140734912747109176534020886580539516654681674464870587081374854510850595347202744051176551109119165716536047263217664666996662170882630042947238466043371
 
-#false
-F1=65701701452872814731
-F2=588264871565698933
-F3=82682447071747849
-
 #FUNCTIONS
 
 #gyors hatvanyozas 
@@ -82,7 +77,7 @@ def mr_primality_test(a:int, n:int):
     for ind, e in reversed(list(enumerate(a_list))):
         if e <= diff and diff-e>=0:
             diff-=e
-            supplementary_element_indexes.append(ind)
+            supplementary_element_indexes.append(ind)   
 
     #calculating a^m
     a_on_m=res
@@ -112,6 +107,7 @@ def mr_primality_test(a:int, n:int):
     #print(a_list)
     #print(mod_res_list)
 
+    #check
     for element in reversed(mod_res_list_part_2):
         if element==1:
             continue
@@ -132,36 +128,66 @@ def calc_r_and_m(n:int):
     while(True):
         rem=res%2
         if (rem==0):
-            res=res/2
+            res=res//2
             r=r+1
             two_on_r*=2
         else:          
             break
-    m=n_minus_one/two_on_r
-    #print("r:",r,"m:",m)     
+    m=n_minus_one//two_on_r
+    # print("r:",r,"m:",m)     
     return r,m      
+
+def greatest_common_divisor(k:int, l:int):
+    if k == l: 
+        return 0
+    elif k == 0 or l == 0:
+        return k
+    else:
+        if k > l:
+            return greatest_common_divisor(k-l, l)
+        else:
+            return greatest_common_divisor(k, l-k)        
+
+
+def key_generation(p:int, q:int) -> tuple[int, int]:
+    #two prime numbers: p, q
+
+    #product
+    product=p*q
+
+    #calculate totient
+    totient=(p-1)*(q-1)
+
+    #select public key
+    public_key=2
+    while(public_key<totient):
+        if mr_primality_test(A, public_key) and greatest_common_divisor(totient, public_key)==1:
+            break
+        elif public_key==2:
+            public_key+=1
+        else:
+            public_key+=2
+    #print(public_key)            
+
+    #select private key: (private_key*public_key) mod totient = 1
+
 
 
 if __name__ == "__main__":
-    #p=input("p: ")
-    #q=input("q: ")
-    #message=input("message(integer): ")
-
-    #print("prime_test(p): ",prime_test(int(p)))
-    #print("prime_test(q): ",prime_test(int(q)))
 
     start_time = time.time()
-    print(mr_primality_test(A, 96405083))
+    key_generation(7, 19)
     print("--- %s seconds ---" % (time.time() - start_time))
 
-    dir = os.path.dirname(__file__)
-    filename = os.path.join(dir, 'Testing/Data/export_6.txt')
-    test=open(filename,"r")
+
+    # dir = os.path.dirname(__file__)
+    # filename = os.path.join(dir, 'Testing/Data/export_6.txt')
+    # test=open(filename,"r")
     
-    lines=test.readlines()
-    for line in lines:
-        line=line.split('\t')
-        for prime in line:
-            prime=prime.strip('\n')
-            print(prime,": ",mr_primality_test(A, int(prime)))
+    # lines=test.readlines()
+    # for line in lines:
+    #     line=line.split('\t')
+    #     for prime in line:
+    #         prime=prime.strip('\n')
+    #         print(prime,": ",mr_primality_test(A, int(prime)))
 
