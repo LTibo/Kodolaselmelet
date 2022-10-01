@@ -144,13 +144,7 @@ def calc_r_and_m(n:int):
             break
     m=n_minus_one//two_on_r
     # print("r:",r,"m:",m)     
-    return r,m      
-
-def greatest_common_divisor(a:int, b:int):
-    if b == 0:
-        return a
-    else:
-        return greatest_common_divisor(b, a%b)          
+    return r,m               
 
 
 def extended_euclidian(a:int, b:int) -> tuple[int, int, int]:
