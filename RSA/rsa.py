@@ -1,5 +1,6 @@
 import time
 import os
+from dataclasses import dataclass
 
 #CONSTANTS
 
@@ -11,10 +12,19 @@ P50_1=13028317441145613048590061985388937770807889867209
 P300_1=418935665971635472851313446571463339584979301560842377758748758164833583501175687936063039370886243305685565007772947619136941212910832585955786954057597686446358493529046645312686416471967277388347161795818502950943879042333390829966913426040692197740642654317185348516362135306322034813076900210333
 P300_2=987803022049986277135970067344834622462454497299773392125226379865108836890801465494624453732220262575620990176677624787173368810199864691227980099140734912747109176534020886580539516654681674464870587081374854510850595347202744051176551109119165716536047263217664666996662170882630042947238466043371
 
+#STRUCTS
+
+@dataclass
+class Extended_euclidian_line:
+    quotient: int
+    remainder: int
+    s: int
+    t: int
+
 #FUNCTIONS
 
 #gyors hatvanyozas 
-def fast_modular_exponentiation(a:int, n:int, r:int, m:int) -> int:
+def fast_modular_exponentiation(a:int, m:int, n:int) -> int:
     i=1
     res=a
     a_list:list=[i]
@@ -38,15 +48,7 @@ def fast_modular_exponentiation(a:int, n:int, r:int, m:int) -> int:
     for ind in supplementary_element_indexes:
         a_on_m=(a_on_m*mod_res_list[ind])%n
 
-    res=a_on_m
-
-    #calculating the rest
-    q=1
-    while (q<=r):
-        q+=1
-        res=(res*res)%n
-
-    return res              
+    return a_on_m              
 
 #gyors hatvanyozas
 def mr_primality_test(a:int, n:int):
@@ -137,19 +139,61 @@ def calc_r_and_m(n:int):
     # print("r:",r,"m:",m)     
     return r,m      
 
-def greatest_common_divisor(k:int, l:int):
-    if k == l: 
-        return 0
-    elif k == 0 or l == 0:
-        return k
-    else:
-        if k > l:
-            return greatest_common_divisor(k-l, l)
+def greatest_common_divisor(a:int, b:int):
+    while (a!=b):
+        if a>b:
+            a=a-b
         else:
-            return greatest_common_divisor(k, l-k)        
+            b=b-a
+
+    return a            
 
 
-def key_generation(p:int, q:int) -> tuple[int, int]:
+def extended_euclidian(a:int, b:int) -> tuple[int, int, int]:
+    
+    l=0 #larger value
+    s=0 #smaller value
+    if a > b:
+        l=a
+        s=b
+    else:
+        l=b
+        s=a
+
+    i0=Extended_euclidian_line(None, l, 1, 0)
+
+    i1=Extended_euclidian_line(None, s, 0, 1)
+
+    gcd=None
+    Bezout_coefficient_1=None
+    Bezout_coefficient_2=None
+    table=[i0,i1]
+    i=2
+    while(True):
+        
+        quotient=table[i-2].remainder//table[i-1].remainder
+        remainder=table[i-2].remainder-(quotient*table[i-1].remainder)
+        s=table[i-2].s-(quotient*table[i-1].s)
+        t=table[i-2].t-(quotient*table[i-1].t)
+
+        line=Extended_euclidian_line(quotient, remainder, s, t)
+
+        
+
+        if line.remainder==0:
+            gcd=table[i-1].remainder
+            Bezout_coefficient_1=table[i-1].s 
+            Bezout_coefficient_2=table[i-1].t
+            break
+
+        i+=1
+        table.append(line)
+
+    #print(Bezout_coefficient_1, Bezout_coefficient_2, gcd)
+    return Bezout_coefficient_1, Bezout_coefficient_2, gcd   
+
+
+def key_generation(p:int, q:int) -> tuple[int, int, int]:
     #two prime numbers: p, q
 
     #product
@@ -169,15 +213,36 @@ def key_generation(p:int, q:int) -> tuple[int, int]:
             public_key+=2
     #print(public_key)            
 
-    #select private key: (private_key*public_key) mod totient = 1
+    #select private key: (private_key*public_key) ≡ 1 mod(totient)
+    private_key=None
+    Bezout_coefficient_1, Bezout_coefficient_2, gcd = extended_euclidian(public_key, totient)
 
+    if (Bezout_coefficient_1*public_key)%totient==1:
+        private_key=Bezout_coefficient_1
+    else:
+        private_key=Bezout_coefficient_2    
 
+    while (private_key<0):
+        private_key+=totient
+
+    return private_key, public_key, product
+
+def encrypt(public_key:int, message:int, n:int) ->int:
+    return fast_modular_exponentiation(message, public_key, n)
+
+def decrypt(private_key:int, message:int, n:int) -> int:
+    return fast_modular_exponentiation(message, private_key, n)
 
 if __name__ == "__main__":
 
+    
     start_time = time.time()
-    key_generation(7, 19)
-    print("--- %s seconds ---" % (time.time() - start_time))
+    print(key_generation(7, 19))
+    print("--------")
+    print("Key generation: %s seconds" % (time.time() - start_time))
+    print("--------")
+    print(encrypt(5, 92, 133))
+    print(decrypt(65, 99, 133))
 
 
     # dir = os.path.dirname(__file__)
