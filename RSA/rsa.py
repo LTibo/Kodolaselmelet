@@ -1,6 +1,7 @@
 import time
 import os
 from dataclasses import dataclass
+import random
 
 #CONSTANTS
 
@@ -10,7 +11,11 @@ P4_1=2129
 P4_2=7919
 P10_1=2266158563
 P10_2=6794445407
+P15_1=234620322075379
+P15_2=897229386310259
 P50_1=13028317441145613048590061985388937770807889867209
+P100_1=7608367794680566508765526190236443829666887048709765014048513900924574414466301018547920587791917867
+P100_2=7022907309745430185208014885989351945610218402731987260517312382397948158487451741511130965746576191
 P300_1=418935665971635472851313446571463339584979301560842377758748758164833583501175687936063039370886243305685565007772947619136941212910832585955786954057597686446358493529046645312686416471967277388347161795818502950943879042333390829966913426040692197740642654317185348516362135306322034813076900210333
 P300_2=987803022049986277135970067344834622462454497299773392125226379865108836890801465494624453732220262575620990176677624787173368810199864691227980099140734912747109176534020886580539516654681674464870587081374854510850595347202744051176551109119165716536047263217664666996662170882630042947238466043371
 
@@ -202,15 +207,15 @@ def key_generation(p:int, q:int) -> tuple[int, int, int]:
     totient=(p-1)*(q-1)
 
     #select public key
-    public_key=2
+    public_key=random.randrange(3, 3+(totient//10), 2)
     while(public_key<totient):
-        if mr_primality_test(A, public_key) and greatest_common_divisor(totient, public_key)==1:
+        _, _, gcd = extended_euclidian(public_key, totient)
+        if mr_primality_test(A, public_key) and gcd==1:
             break
         elif public_key==2:
             public_key+=1
         else:
-            public_key+=2
-    #print(public_key)            
+            public_key+=2           
 
     #select private key: (private_key*public_key) ≡ 1 mod(totient)
     private_key=None
@@ -251,11 +256,11 @@ if __name__ == "__main__":
         print("Key generation: %s seconds" % (time.time() - start_time))
         print("--------")
 
-        print(f"Public key: {public_key}")
+        print(f"Public key:\n{public_key}")
         print("----------------------------------------")
-        print(f"Modulus: {n}")
+        print(f"Modulus:\n{n}")
         print("----------------------------------------")
-        print(f"Private key: {private_key}")
+        print(f"Private key:\n{private_key}")
         print("----------------------------------------")
     elif mode=="e":
         e=input("Encryption key: ")
@@ -265,7 +270,7 @@ if __name__ == "__main__":
         message=input("Message(integer): ")
         print("----------------------------------------")
 
-        print(f"Encrypted message: {encrypt(int(e), int(message), int(m))}")
+        print(f"Encrypted message:\n{encrypt(int(e), int(message), int(m))}")
         print("----------------------------------------")
     elif mode=="d":
         e=input("Decryption key: ")
@@ -275,7 +280,7 @@ if __name__ == "__main__":
         message=input("Message(integer): ")
         print("----------------------------------------")
 
-        print(f"Decrypted message: {decrypt(int(e), int(message), int(m))}")
+        print(f"Decrypted message:\n{decrypt(int(e), int(message), int(m))}")
         print("----------------------------------------")
     else:
         print("Unrecognised command!")
