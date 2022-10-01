@@ -50,7 +50,7 @@ def fast_modular_exponentiation(a:int, m:int, n:int) -> int:
 
     return a_on_m              
 
-#gyors hatvanyozas
+#prim teszt
 def mr_primality_test(a:int, n:int):
     if n==2:
         return True
@@ -140,13 +140,10 @@ def calc_r_and_m(n:int):
     return r,m      
 
 def greatest_common_divisor(a:int, b:int):
-    while (a!=b):
-        if a>b:
-            a=a-b
-        else:
-            b=b-a
-
-    return a            
+    if b == 0:
+        return a
+    else:
+        return greatest_common_divisor(b, a%b)          
 
 
 def extended_euclidian(a:int, b:int) -> tuple[int, int, int]:
@@ -227,22 +224,48 @@ def key_generation(p:int, q:int) -> tuple[int, int, int]:
 
     return private_key, public_key, product
 
-def encrypt(public_key:int, message:int, n:int) ->int:
-    return fast_modular_exponentiation(message, public_key, n)
+def encrypt(public_key:int, message:int, modulus:int) ->int:
+    return fast_modular_exponentiation(message, public_key, modulus)
 
-def decrypt(private_key:int, message:int, n:int) -> int:
-    return fast_modular_exponentiation(message, private_key, n)
+def decrypt(private_key:int, message:int, modulus:int) -> int:
+    return fast_modular_exponentiation(message, private_key, modulus)
 
 if __name__ == "__main__":
+    mode=input("Select a mode (press \"g\" for key pair generation, \"e\" for message encryption, \"d\" for decrytion): ")
 
-    
-    start_time = time.time()
-    print(key_generation(7, 19))
-    print("--------")
-    print("Key generation: %s seconds" % (time.time() - start_time))
-    print("--------")
-    print(encrypt(5, 92, 133))
-    print(decrypt(65, 99, 133))
+    if mode=="g":
+        p=input("Value of p: ")
+        q=input("Value of q: ")
+        if not mr_primality_test(A, int(p)):
+            print(f"{p} is composite")
+            exit()
+        if not mr_primality_test(A, int(q)):
+            print(f"{q} is composite")
+            exit()
+
+        start_time = time.time()
+        private_key, public_key, n = key_generation(int(p),int(q))
+        print("--------")
+        print("Key generation: %s seconds" % (time.time() - start_time))
+        print("--------")
+
+        print(f"Public key: {public_key}")
+        print(f"Modulus: {n}")
+        print(f"Private key: {private_key}")
+    elif mode=="e":
+        e=input("Encryption key: ")
+        m=input("Modulus: ")
+        message=input("Message(integer): ")
+
+        print(f"Encrypted message: {encrypt(int(e), int(message), int(m))}")
+    elif mode=="d":
+        e=input("Decryption key: ")
+        m=input("Modulus: ")
+        message=input("Message(integer): ")
+
+        print(f"Decrypted message: {decrypt(int(e), int(message), int(m))}")
+    else:
+        print("Unrecognised command!")
 
 
     # dir = os.path.dirname(__file__)
