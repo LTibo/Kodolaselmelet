@@ -233,7 +233,7 @@ def decrypt(private_key:int, message:int, modulus:int) -> int:
     return fast_modular_exponentiation(message, private_key, modulus)
 
 if __name__ == "__main__":
-    mode=input("Select a mode (press \"g\" for key pair generation, \"e\" for message encryption, \"d\" for decrytion): ")
+    mode=input("Select a mode (press \"g\" for key pair generation, \"e\" for message encryption, \"d\" for decryption): ")
 
     if mode=="g":
         p=input("Value of p: ")
