@@ -1,8 +1,11 @@
 import heapq
 import sys
 
-G1=[[1,0,0,1,0],[0,1,0,1,1],[0,0,1,1,0]]
-U1=[[1,0,0,0,1]]
+G1_2=[[1,0,0,1,0],[0,1,0,1,1],[0,0,1,1,0]]
+G2_3=[[1,0,1,2],[0,1,1,1]]
+U1_1_ERROR_BASE_2=[[1,0,0,0,1]]
+U2_0_ERROR_BASE_3=[[2,1,0,2]]
+
 
 GOLAY_G1=[[1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,],
           [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 1, 1, 1, 0, 0, 0, 1, 0,],
@@ -18,6 +21,7 @@ GOLAY_G1=[[1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 1, 0, 1, 1, 1, 0, 0, 0, 1,]]
 
 GOLAY_U1_2_ERROR=[[1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 1, 0, 0, 0,]]
+GOLAY_U2_3_ERROR=[[1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 1, 0, 0, 0,]]
 
 def print_matrix(m:list):
     for sor in m:
@@ -30,6 +34,9 @@ def generalobol_ellenorzo_matrix(g:list):
     ellenorzo=[]
     for sor in g:
         ellenorzo.append(sor[len(g):])
+    
+    # -1-el szorzas
+    print(ellenorzo)
     
     one_index=0
     ellenorzo_sor_len=len(ellenorzo[0])
@@ -52,6 +59,7 @@ def matrix_szorzas(m1:list, m2:list, base:int=2):
     
     return szorzat   
 
+#először 1 hibásakat, utána 2, utána 3 stb, generál
 def generate_error_vector(sequence, repeat):
     repeated_sequence=[]
     for i in range(repeat):
@@ -127,8 +135,11 @@ def decode(generalo_matrix:list, kodszo:list, base:list):
 
 # ((szám % modulus) + modulus) % modulus
 if __name__ == "__main__":
-    decode(GOLAY_G1, GOLAY_U1_2_ERROR, 2)
-    # decode(G1, U1, 2)
+    # decode(G1_2, U1_1_ERROR, 2)
+    decode(G2_3,U2_0_ERROR_BASE_3, 3)
+    # decode(GOLAY_G1, GOLAY_U1_2_ERROR, 2)
+    # decode(GOLAY_G1, GOLAY_U2_3_ERROR, 2)
+    
     
     # for tup in generate_error_vector(range(0, 2), 3):
     #    print(tup)
