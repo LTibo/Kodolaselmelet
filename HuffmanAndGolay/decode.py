@@ -1,13 +1,23 @@
-from itertools import product
+import heapq
 import sys
-
-A=[[1,0,1], [2,1,1], [0,1,1], [1,1,2]]
-B=[[1,2,1], [2,3,1], [4,2,2]]
-
 
 G1=[[1,0,0,1,0],[0,1,0,1,1],[0,0,1,1,0]]
 U1=[[1,0,0,0,1]]
-T=2
+
+GOLAY_G1=[[1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,],
+          [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 1, 1, 1, 0, 0, 0, 1, 0,],
+          [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 1, 1, 0, 0, 0, 1, 0, 1,],
+          [0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 1, 1, 0, 0, 0, 1, 0, 1, 1,],
+          [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 1, 0, 1, 1, 0,],
+          [0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 0, 1, 1, 0, 1,],
+          [0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 1, 0, 1, 1, 0, 1, 1,],
+          [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 1, 0, 1, 1, 1,],
+          [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 1, 1, 0, 1, 1, 1, 0,],
+          [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 1, 1, 0, 1, 1, 1, 0, 0,],
+          [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 1, 0, 0, 0,],
+          [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 1, 0, 1, 1, 1, 0, 0, 0, 1,]]
+
+GOLAY_U1_2_ERROR=[[1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 1, 0, 0, 0,]]
 
 def print_matrix(m:list):
     for sor in m:
@@ -41,10 +51,27 @@ def matrix_szorzas(m1:list, m2:list, base:int=2):
     szorzat=[[((sum(a*b for a,b in zip(A_sor, B_oszlop))% base) + base)%base for B_oszlop in zip(*m2)] for A_sor in m1]
     
     return szorzat   
-            
 
-def generate_error_vector(vector_length:int, base:int=2):
-    return product(range(0,base), repeat=vector_length)
+def generate_error_vector(sequence, repeat):
+    repeated_sequence=[]
+    for i in range(repeat):
+        repeated_sequence.append(sequence)
+    start = (0,)*len(repeated_sequence)
+    queue = [(0, start)]
+    seen = set([start])
+    while queue:
+        _, indexes = heapq.heappop(queue)
+        yield tuple(seq[index] for seq, index in zip(repeated_sequence, indexes))
+        for i in range(len(repeated_sequence)):
+            if indexes[i] < len(repeated_sequence[i]) - 1:
+                lst = list(indexes)
+                lst[i] += 1
+                new_indexes = tuple(lst)
+                if new_indexes not in seen:
+                    new_priority = sum(index * index for index in new_indexes)
+                    heapq.heappush(queue, (new_priority, new_indexes))
+                    seen.add(new_indexes)
+
 
 
 def count_error_bits(vector:list):
@@ -63,38 +90,48 @@ def vektor_kivonas(v1:list, v2:list, base:int=2):
         kulonbseg_vektor.append((((i1-i2) % base) + base)%base)
     return kulonbseg_vektor
 
-# ((szám % modulus) + modulus) % modulus
-if __name__ == "__main__":
-    base=2
+def decode(generalo_matrix:list, kodszo:list, base:list):
     print("Kódolt üzenet:")
-    print_matrix(U1)
+    print_matrix(kodszo)
     print("Ellenőrző mátrix:")
-    p=generalobol_ellenorzo_matrix(G1)
+    p=generalobol_ellenorzo_matrix(generalo_matrix)
     print_matrix(p)
     
     print("Szindróma:")
-    szindroma=matrix_szorzas(U1,p)
+    szindroma=matrix_szorzas(kodszo,p)
     print_matrix(szindroma)
     
     print("Szindróma keresés:")
-    hiba_vektorok=[]
-    legkesvesebb_hiba=0
-    for i in generate_error_vector(len(U1[0]), base):
+    hiba_vektor=[]
+    legkisebb_hiba=len(kodszo[0])
+    for i in generate_error_vector(range(base), len(kodszo[0])):
         i=[list(i)]
         if matrix_szorzas(i,p) == szindroma:
-            hiba_vektorok.append((count_error_bits(i[0]),i))
+            if count_error_bits(i[0])>legkisebb_hiba:
+                break
+            elif count_error_bits(i[0]) == legkisebb_hiba:
+                print("Több mint 1 db legközelebbi kódszó!")
+                sys.exit()
+            else:
+                legkisebb_hiba = count_error_bits(i[0])
+                hiba_vektor=i
+                
+    print("Hiba vektor:")
+    print_matrix(hiba_vektor)      
+    print("Javított kód:")
+    javitott=vektor_kivonas(kodszo[0], hiba_vektor[0], base)
+    print_matrix([javitott])
+    print("Ellenőrzés:")
+    ellenorzo_szorzat = matrix_szorzas([javitott], p, base)
+    print_matrix(ellenorzo_szorzat)
+
+# ((szám % modulus) + modulus) % modulus
+if __name__ == "__main__":
+    decode(GOLAY_G1, GOLAY_U1_2_ERROR, 2)
+    # decode(G1, U1, 2)
     
-    hiba_vektorok=sorted(hiba_vektorok, key=lambda x:x[0])
-    # print(hiba_vektorok)
-    
-    if hiba_vektorok[0][0] == hiba_vektorok[1][0]:
-        print("Több mint 1 db legközelebbi kódszó!")
-    else:
-        print("Javított kód:")
-        javitott=vektor_kivonas(U1[0], hiba_vektorok[0][1][0], base)
-        print(javitott)
-        print("Ellenőrzés:")
-        ellenorzo_szorzat = matrix_szorzas([javitott], p, base)
-        print_matrix(ellenorzo_szorzat)
+    # for tup in generate_error_vector(range(0, 2), 3):
+    #    print(tup)
+
         
     
