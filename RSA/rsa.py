@@ -278,16 +278,3 @@ if __name__ == "__main__":
         print("----------------------------------------")
     else:
         print("Unrecognised command!")
-
-
-    # dir = os.path.dirname(__file__)
-    # filename = os.path.join(dir, 'Testing/Data/export_6.txt')
-    # test=open(filename,"r")
-    
-    # lines=test.readlines()
-    # for line in lines:
-    #     line=line.split('\t')
-    #     for prime in line:
-    #         prime=prime.strip('\n')
-    #         print(prime,": ",mr_primality_test(A, int(prime)))
-
